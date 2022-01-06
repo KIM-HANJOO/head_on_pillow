@@ -1,0 +1,146 @@
+from PIL import Image, ImageDraw
+import os
+import sys
+from pathlib import Path
+import cv2
+import math
+import pandas as pd
+
+import matplotlib.pyplot as plt
+#import imodule as imd
+import numpy as np
+import random
+
+
+module_dir = os.getcwd()
+tmp_path = Path(module_dir)
+main_dir = tmp_path.parent.absolute()
+smpl_dir = os.path.join(main_dir, 'sample')
+plot_dir = os.path.join(main_dir, 'image')
+src_dir = os.path.join(main_dir, 'sources')
+tilesets_dir = os.path.join(main_dir, 'pokemon_red_tilesets')
+org_tilesets_dir = os.path.join(tilesets_dir, 'tilesets_org')
+split_tilesets_dir = os.path.join(tilesets_dir, 'tilesets_split')
+grid_tilesets_Dir = os.path.join(tilesets_dir, 'tilesets_grid')
+
+sys.path.append(module_dir)
+import discordlib_pyplot as dlt
+import image_module as im
+
+'''
+info
+each tile is 32 * 32,
+in the tilesets assume that each tile is 16 * 16
+
+tile_set_1 : 128 * 40 : (16, 5)
+tile_set_2 : 128 * 48 : (16, 6)
+tile_set_4 : 128 * 48 : (16, 6)
+tile_set_6 : 128 * 40 : (16, 5)
+tile_set_7 : 128 * 48 : (16, 6)
+tile_set_8 : 128 * 48 : (16, 6)
+tile_set_9 : 128 * 48 : (16, 6)
+tile_set_0A : 128 * 48 : (16, 6)
+tile_set_0B : 128 * 48 : (16, 6)
+tile_set_0C : 128 * 48 : (16, 6)
+tile_set_0D : 128 * 40 : (16, 5)
+tile_set_0E : 128 * 48 : (16, 6)
+tile_set_10 : 128 * 40 : (16, 5)
+tile_set_11 : 128 * 40 : (16, 5)
+tile_set_12 : 128 * 16 : (16, ?)
+
+'''
+
+
+# make list of tilesets to add
+name_list = ['0A', '01', '09', '10', '11']
+tileset_list = []
+for item in name_list :
+    tileset_list.append(f'Pokemon_RBY_Tile_Set_{item}.png')
+
+
+print(16 * (25 + 54))
+## load tilesets and print tileset size info
+#for tileset in os.listdir(org_tilesets_dir) :
+#    if '.png' in tileset :
+#        os.chdir(org_tilesets_dir)
+#
+#        tiles, tiles_draw, tiles_width, tiles_height, h, s, v = im.load_img_resize(tileset, 2)
+#        print(f'{tileset[12 : -4]} : ({tiles_width}, {tiles_height})')
+#
+## add grid to tilesets (crop lines)
+#
+#    
+#for tileset in os.listdir(org_tilesets_dir) :
+#    if tileset in tileset_list :
+##    if ('.png' in tileset) & ('12' not in tileset) :
+#        interval = 16
+#        gap = 0
+#
+#        os.chdir(org_tilesets_dir)
+#        tiles, tiles_draw, tiles_width, tiles_height, h, s, v = im.load_img_resize(tileset, 2)
+#
+#        image, draw = im.get_draw(tiles_width, tiles_height, None)
+#
+#        box_info, side_width, side_height = im.grid_rectangle(tiles_draw, tiles_width, tiles_height, interval, gap, 'red')
+#
+#        #dlt.savepng(tiles, os.path.join(, 'tilesets_grid'),  f'{tileset[12 : -4]}_grid.png')
+#
+## crop tilesets
+#
+
+# make dataframe, log for v values
+cols = ['tilename']
+for i in range(1, 257) :
+    cols.append(str(i))
+hsv_df = pd.DataFrame(columns = cols)
+df_num = 0 
+
+# write in dataframe
+for tileset in os.listdir(org_tilesets_dir) :
+    if tileset in tileset_list :
+#    if ('.png' in tileset) & ('12' not in tileset) :
+        interval = 16
+        gap = 0
+
+        os.chdir(org_tilesets_dir)
+        tiles, tiles_draw, tiles_width, tiles_height, h, s, v = im.load_img_resize(tileset, 2)
+        image, draw = im.get_draw(tiles_width, tiles_height, None)
+        print(tiles.size)
+        print((tiles.size[0] / interval) * (tiles.size[1] / interval))
+        print(box_info.shape[0])
+
+        box_info, side_width, side_height = im.grid_rectangle(draw, tiles_width, tiles_height, interval, gap, None)
+
+        for tile_num in range(box_info.shape[0]) :
+            tile_name = f'{tileset[12 : -4]}_{tile_num}.png'
+            crop_range = box_info[tile_num, :].tolist()
+
+            crop_tile_org = tiles.crop(tuple(crop_range))
+            
+            crop_tile_org = crop_tile_org.convert('RGBA')
+            crop_background = Image.new('RGBA', crop_tile_org.size, 'white')
+            crop_background.paste(crop_tile_org, mask = crop_tile_org)
+            #crop_background.paste(crop_tile_org, (0, 0))
+            crop_tile = crop_background.convert('RGB')
+
+            crop_hsv = crop_tile.convert('HSV')
+            h, s, v = crop_hsv.split()
+            v = np.array(v).transpose()
+            ave = v.sum() / (v.shape[0] * v.shape[1]) 
+            if (ave < 200) & (ave > 60) :
+
+                os.chdir(os.path.join(tilesets_dir, 'tilesets_split'))
+                crop_tile.save(tile_name)
+                hsv_df.loc[df_num, 'tilename'] = tile_name
+                hsv_df.loc[df_num, '1' : '256'] = v.reshape(1, 256)[0].tolist()
+                df_num += 1
+            else :
+                os.chdir(os.path.join(tilesets_dir, 'tilesets_excepts'))
+                crop_tile.save(f'!_{tile_name}')
+                pass
+                #print('white/black tile')
+            #dlt.savepng(crop_tile, os.path.join(tilesets_dir, 'tilesets_split'), f'{tileset[12 : -4]}_{tile_num}.png')
+
+os.chdir(tilesets_dir)
+hsv_df.to_excel('tilesets_v_info.xlsx')
+
