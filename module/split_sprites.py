@@ -28,13 +28,25 @@ ex_32 = os.path.join(tilesets_dir, 'tilesets_extended_32x32')
 ex_64 = os.path.join(tilesets_dir, 'tilesets_extended_64x64')
 ex_96 = os.path.join(tilesets_dir, 'tilesets_extended_96x96')
 ex_800 = os.path.join(tilesets_dir, 'tilesets_extended_800x800')
+excepts_dir = os.path.join(tilesets_dir, 'tilesets_excepts')
 
 test_dir = os.path.join(tilesets_dir, 'test')
 
 
 sys.path.append(module_dir)
+import directory_change as dich
 import discordlib_pyplot as dlt
 import image_module as im
+
+
+dich.remove_inside_folder(split_tilesets_dir)
+dich.remove_inside_folder(ex_16)
+dich.remove_inside_folder(ex_32)
+dich.remove_inside_folder(ex_64)
+dich.remove_inside_folder(ex_96)
+dich.remove_inside_folder(ex_800)
+dich.remove_inside_folder(excepts_dir)
+
 
 '''
 info
@@ -68,7 +80,7 @@ for item in name_list :
     print(f'adding... Pokemon_RBY_Tile_Set_{item}.png')
 
 
-tileset_list = os.listdir(org_tilesets_dir)
+#tileset_list = os.listdir(org_tilesets_dir)
 
 
 #print(16 * (25 + 54))
@@ -103,108 +115,117 @@ for tileset in os.listdir(org_tilesets_dir) :
             print(box_info.shape[0], (tiles_width / (interval * multi)),  (tiles_height / (interval * multi)))
                 
 
-        #dlt.savepng(tiles, grid_tilesets_dir,  f'{tileset[12 : -4]}_grid.png')
+       #dlt.savepng(tiles, grid_tilesets_dir,  f'{tileset[12 : -4]}_grid.png')
 
-# crop tilesets
+ #crop tilesets
 
 
-# make dataframe, log for v values
-#cols = ['tilename']
-#for i in range(1, 65) :
-#    cols.append(str(i))
-#hsv_df = pd.DataFrame(columns = cols)
-#df_num = 0 
-#
-## write in dataframe
-#for number, tileset in enumerate(os.listdir(org_tilesets_dir)) :
-#    if tileset in tileset_list :
-##    if ('.png' in tileset) & ('12' not in tileset) :
-#        interval = 8
-#        gap = 0
-#
-#        os.chdir(org_tilesets_dir)
-#        tiles, tiles_draw, tiles_width, tiles_height, h, s, v = im.load_img(tileset)
-#
-#        box_info, side_width, side_height = im.grid_rectangle(tiles_draw, tiles_width, tiles_height, interval, gap, None)
-#
-#        for tile_num in range(box_info.shape[0]) :
-#            tile_name = f'{tileset[12 : -4]}_{tile_num}.png'
-#            crop_range = box_info[tile_num, :].tolist()
-#
-#            crop_tile_org = tiles.crop(tuple(crop_range))
-#            
-#            crop_tile_org = crop_tile_org.convert('RGBA')
-#            crop_background = Image.new('RGBA', crop_tile_org.size, 'white')
-#            crop_background.paste(crop_tile_org, mask = crop_tile_org)
-#            #crop_background.paste(crop_tile_org, (0, 0))
-#            crop_tile = crop_background.convert('RGB')
-#            print(crop_tile.size)
-#
-#            crop_hsv = crop_tile.convert('HSV')
-#            h, s, v = crop_hsv.split()
-#            v = np.array(v).transpose()
-#            ave = v.sum() / (v.shape[0] * v.shape[1]) 
-#            #if (ave < 200) & (ave > 60) :
-#            print(v.shape)
-#            if ave < 1000 :
-#
-#                os.chdir(os.path.join(tilesets_dir, 'tilesets_split'))
-#                crop_tile.save(tile_name)
-#                hsv_df.loc[df_num, 'tilename'] = tile_name #                hsv_df.loc[df_num, '1' : '64'] = v.reshape(1, 64)[0].tolist() #                df_num += 1 #            else :
-#                os.chdir(os.path.join(tilesets_dir, 'tilesets_excepts'))
-#                crop_tile.save(f'!_{tile_name}')
-#                pass
-#                #print('white/black tile')
-#            #dlt.savepng(crop_tile, os.path.join(tilesets_dir, 'tilesets_split'), f'{tileset[12 : -4]}_{tile_num}.png')
-#            if number == 1 :
-#                dlt.savepng(crop_tile, test_dir, 'test.png')
-#
-#
-#os.chdir(tilesets_dir)
-#hsv_df.to_excel('tilesets_v_info.xlsx')
-#
-#for number, tile_name in enumerate(os.listdir(split_tilesets_dir)) :
-#    for mult in [2, 4, 12, 100] :
-#        # load 16x16 sixed tile image
-#        os.chdir(split_tilesets_dir)
-#        tile = Image.open(tile_name)
-#
-#        # make canvas with extended size
-#        tile_ex = Image.new('RGBA', size = (mult * tile.size[0], mult * tile.size[1]), color = 'white')
-#        draw_ex = ImageDraw.Draw(tile_ex)
-#
-#        # get rgb by array type
-#        tile_rgb = tile.convert('RGB')
-#        print('tile_rgb size is ', tile_rgb.size)
-#        print('tile size is', tile.size)
-#        #print(tile_rgb)
-#        #tile_rgb = np.array(tile_rgb)
-#        #print(tile_rgb.shape)
-#
-#        # make extended_rgb_array
-#        ex_size = (mult * tile.size[0], mult * tile.size[1])
-#        #ex_rgb_array = np.zeros(ex_size)
-#
-#        # add rgb values to extended_rgb_array
-#        for x in range(tile.size[0]) :
-#            for y in range(tile.size[1]) :
-#                r, g, b = tile_rgb.getpixel((x, y))
-#                temp_paste = Image.new('RGBA', (mult, mult), color = (r, g, b))
-#                tile_ex.paste(temp_paste, (mult * x, mult * y))
-#                print(f'x = {x}, = {y}')
-#                print(f'r, g, b value is found, {r, g, b}')
-#                print(f'made {(mult, mult)} size of temp_paste')
-#                print(f'pasted on to {(mult * x, mult * y)}, where size is {ex_size}')
-#                print('#####################')
-#
-#
-#        os.chdir(locals()[f'ex_{ex_size[0]}'])
-#        tile_ex.save(f'{tile_name[ : -4]}_{ex_size[0]}x{ex_size[1]}.png')
-#        print(f'{tile_name[ : -4]}_{ex_size[0]}x{ex_size[1]}.png saved')
-#
+ #make dataframe, log for v values
+cols = ['tilename']
+for i in range(1, 65) :
+    cols.append(str(i))
+hsv_df = pd.DataFrame(columns = cols)
+df_num = 0 
+
+# write in dataframe
+for number, tileset in enumerate(os.listdir(org_tilesets_dir)) :
+    if tileset in tileset_list :
+#    if ('.png' in tileset) & ('12' not in tileset) :
+        interval = 8
+        gap = 0
+
+        os.chdir(org_tilesets_dir)
+        tiles, tiles_draw, tiles_width, tiles_height, h, s, v = im.load_img(tileset)
+
+        box_info, side_width, side_height = im.grid_rectangle(tiles_draw, tiles_width, tiles_height, interval, gap, None)
+
+        for number, tile_num in enumerate(range(box_info.shape[0])) :
+            tile_name = f'{tileset[12 : -4]}_{tile_num}.png'
+            crop_range = box_info[tile_num, :].tolist()
+#            crop_range[0] = crop_range[0] + 1
+#            crop_range[1] = crop_range[1] + 1
+#            crop_range[2] = crop_range[2] + 1
+#            crop_range[3] = crop_range[3] + 1
+
+            crop_tile_org = tiles.crop(tuple(crop_range))
+            print(crop_tile_org.size)
+            
+            crop_tile_org = crop_tile_org.convert('RGBA')
+            crop_background = Image.new('RGBA', crop_tile_org.size, 'white')
+            crop_background.paste(crop_tile_org, mask = crop_tile_org)
+            #crop_background.paste(crop_tile_org, (0, 0))
+            crop_tile = crop_background.convert('RGB')
+            print(crop_tile.size)
+
+
+            crop_hsv = crop_tile.convert('HSV')
+            h, s, v = crop_hsv.split()
+            v = np.array(v).transpose()
+            print(v)
+            ave = v.sum() / (v.shape[0] * v.shape[1]) 
+            if (ave < 200) & (ave > 60) :
+            #if ave < 1000 :
+
+                os.chdir(os.path.join(tilesets_dir, 'tilesets_split'))
+                crop_tile.save(tile_name)
+                hsv_df.loc[df_num, 'tilename'] = tile_name 
+                hsv_df.loc[df_num, '1' : '64'] = v.reshape(1, 64)[0].tolist() 
+                df_num += 1 
+            else :
+                os.chdir(os.path.join(tilesets_dir, 'tilesets_excepts'))
+                crop_tile.save(f'!_{tile_name}')
+                pass
+                #print('white/black tile')
+            #dlt.savepng(crop_tile, os.path.join(tilesets_dir, 'tilesets_split'), f'{tileset[12 : -4]}_{tile_num}.png')
+            if number == 1 :
+                dlt.savepng(crop_tile, test_dir, 'test.png')
+
+
+os.chdir(tilesets_dir)
+hsv_df.to_excel('tilesets_v_info.xlsx')
+
+for number, tile_name in enumerate(os.listdir(split_tilesets_dir)) :
+    for mult in [2, 4, 12, 100] :
+        # load 16x16 sixed tile image
+        os.chdir(split_tilesets_dir)
+        tile = Image.open(tile_name)
+
+        # make canvas with extended size
+        tile_ex = Image.new('RGBA', size = (mult * tile.size[0], mult * tile.size[1]), color = 'white')
+        draw_ex = ImageDraw.Draw(tile_ex)
+
+        # get rgb by array type
+        tile_rgb = tile.convert('RGB')
+        print('tile_rgb size is ', tile_rgb.size)
+        print('tile size is', tile.size)
+        #print(tile_rgb)
+        #tile_rgb = np.array(tile_rgb)
+        #print(tile_rgb.shape)
+
+        # make extended_rgb_array
+        ex_size = (mult * tile.size[0], mult * tile.size[1])
+        #ex_rgb_array = np.zeros(ex_size)
+
+        # add rgb values to extended_rgb_array
+        for x in range(tile.size[0]) :
+            for y in range(tile.size[1]) :
+                r, g, b = tile_rgb.getpixel((x, y))
+                temp_paste = Image.new('RGBA', (mult, mult), color = (r, g, b))
+                tile_ex.paste(temp_paste, (mult * x, mult * y))
+                print(f'x = {x}, = {y}')
+                print(f'r, g, b value is found, {r, g, b}')
+                print(f'made {(mult, mult)} size of temp_paste')
+                print(f'pasted on to {(mult * x, mult * y)}, where size is {ex_size}')
+                print('#####################')
+
+
+        os.chdir(locals()[f'ex_{ex_size[0]}'])
+        tile_ex.save(f'{tile_name[ : -4]}.png')
+        print(f'{tile_name[ : -4]}_{ex_size[0]}x{ex_size[1]}.png saved')
+
 #        if (number > 80) & (number < 100) :
 #            if mult == 100 :
-#                dlt.savepng(tile_ex, test_dir, f'{tile_name[ : -4]}_{ex_size[0]}x{ex_size[1]}.png')
-#
-#
-#
+#                dlt.savepng(tile_ex, test_dir, tile_name)
+
+
+print(hsv_df)
